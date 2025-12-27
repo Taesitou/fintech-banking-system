@@ -1,144 +1,158 @@
-import Client from '../Client.js';
-import Account from '../Account.js';
+import Cliente from '../Client.js';
+import Cuenta from '../Account.js';
 
-describe('Client', () => {
+describe('Cliente', () => {
     describe('Constructor', () => {
-        test('debe crear un cliente con email y password', () => {
+        test('debe crear un cliente con id, email, password y datos opcionales', () => {
+            const id = 'CLI001';
             const email = 'test@example.com';
             const password = 'password123';
-            const client = new Client(email, password);
+            const nombre = 'Juan';
+            const apellido = 'Pérez';
+            
+            const cliente = new Cliente(id, email, password, nombre, apellido);
 
-            expect(client.email).toBe(email);
-            expect(client.password).toBe(password);
-            expect(client.accounts).toEqual([]);
+            expect(cliente.getId()).toBe(id);
+            expect(cliente.getEmail()).toBe(email);
+            expect(cliente.getNombreCompleto()).toBe('Juan Pérez');
+            expect(cliente.getCuentas()).toEqual([]);
         });
 
-        test('debe inicializar accounts como un array vacío', () => {
-            const client = new Client('test@example.com', 'pass123');
+        test('debe inicializar cuentas como un array vacío', () => {
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
             
-            expect(Array.isArray(client.accounts)).toBe(true);
-            expect(client.accounts).toHaveLength(0);
+            expect(Array.isArray(cliente.getCuentas())).toBe(true);
+            expect(cliente.getCuentas()).toHaveLength(0);
         });
     });
 
-    describe('createAccount', () => {
-        test('debe agregar una cuenta al array de accounts', () => {
-            const client = new Client('test@example.com', 'pass123');
-            const account = new Account('ACC001', 1000);
+    describe('agregarCuenta', () => {
+        test('debe agregar una cuenta al array de cuentas', () => {
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+            const cuenta = new Cuenta('ACC001', 'CLI001', 'AHORRO', 1000);
 
-            client.createAccount(account);
+            cliente.agregarCuenta(cuenta);
 
-            expect(client.accounts).toHaveLength(1);
-            expect(client.accounts[0]).toBe(account);
+            expect(cliente.getCuentas()).toHaveLength(1);
+            expect(cliente.getCuentas()[0]).toBe(cuenta);
         });
 
         test('debe agregar múltiples cuentas', () => {
-            const client = new Client('test@example.com', 'pass123');
-            const account1 = new Account('ACC001', 1000);
-            const account2 = new Account('ACC002', 2000);
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+            const cuenta1 = new Cuenta('ACC001', 'CLI001', 'AHORRO', 1000);
+            const cuenta2 = new Cuenta('ACC002', 'CLI001', 'CORRIENTE', 2000);
 
-            client.createAccount(account1);
-            client.createAccount(account2);
+            cliente.agregarCuenta(cuenta1);
+            cliente.agregarCuenta(cuenta2);
 
-            expect(client.accounts).toHaveLength(2);
-            expect(client.accounts[0]).toBe(account1);
-            expect(client.accounts[1]).toBe(account2);
+            expect(cliente.getCuentas()).toHaveLength(2);
+            expect(cliente.getCuentas()[0]).toBe(cuenta1);
+            expect(cliente.getCuentas()[1]).toBe(cuenta2);
+        });
+
+        test('no debe agregar cuenta duplicada', () => {
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+            const cuenta = new Cuenta('ACC001', 'CLI001', 'AHORRO', 1000);
+
+            cliente.agregarCuenta(cuenta);
+            const resultado = cliente.agregarCuenta(cuenta);
+
+            expect(resultado).toBe(false);
+            expect(cliente.getCuentas()).toHaveLength(1);
         });
     });
 
-    describe('getTransactionHistory', () => {
+    describe('getHistorialCompleto', () => {
         test('debe retornar un array vacío si no hay cuentas', () => {
-            const client = new Client('test@example.com', 'pass123');
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
 
-            const history = client.getTransactionHistory();
+            const historial = cliente.getHistorialCompleto();
 
-            expect(history).toEqual([]);
+            expect(historial).toEqual([]);
         });
 
         test('debe retornar todas las transacciones de una cuenta', () => {
-            const client = new Client('test@example.com', 'pass123');
-            const account = new Account('ACC001', 1000);
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+            const cuenta = new Cuenta('ACC001', 'CLI001', 'AHORRO', 1000);
             
-            account.deposit(500);
-            account.withdraw(200);
-            client.createAccount(account);
+            cuenta.depositar(500);
+            cuenta.retirar(200);
+            cliente.agregarCuenta(cuenta);
 
-            const history = client.getTransactionHistory();
+            const historial = cliente.getHistorialCompleto();
 
-            expect(history).toHaveLength(2);
-            expect(history[0].type).toBe('deposit');
-            expect(history[0].amount).toBe(500);
-            expect(history[1].type).toBe('withdrawal');
-            expect(history[1].amount).toBe(200);
+            expect(historial).toHaveLength(2);
+            expect(historial[0].tipo).toBe('DEPOSITO');
+            expect(historial[0].monto).toBe(500);
+            expect(historial[1].tipo).toBe('RETIRO');
+            expect(historial[1].monto).toBe(200);
         });
 
         test('debe retornar transacciones de múltiples cuentas', () => {
-            const client = new Client('test@example.com', 'pass123');
-            const account1 = new Account('ACC001', 1000);
-            const account2 = new Account('ACC002', 2000);
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+            const cuenta1 = new Cuenta('ACC001', 'CLI001', 'AHORRO', 1000);
+            const cuenta2 = new Cuenta('ACC002', 'CLI001', 'CORRIENTE', 2000);
 
-            client.createAccount(account1);
-            client.createAccount(account2);
+            cliente.agregarCuenta(cuenta1);
+            cliente.agregarCuenta(cuenta2);
 
-            account1.deposit(300);
-            account2.deposit(500);
-            account1.withdraw(100);
+            cuenta1.depositar(300);
+            cuenta2.depositar(500);
+            cuenta1.retirar(100);
 
-            const history = client.getTransactionHistory();
+            const historial = cliente.getHistorialCompleto();
 
-            expect(history).toHaveLength(3);
-            // Las transacciones se agrupan por cuenta: primero todas de account1, luego de account2
-            expect(history[0].type).toBe('deposit');
-            expect(history[0].amount).toBe(300);
-            expect(history[1].type).toBe('withdrawal');
-            expect(history[1].amount).toBe(100);
-            expect(history[2].type).toBe('deposit');
-            expect(history[2].amount).toBe(500);
+            expect(historial).toHaveLength(3);
+            expect(historial[0].tipo).toBe('DEPOSITO');
+            expect(historial[0].monto).toBe(300);
+            expect(historial[1].tipo).toBe('RETIRO');
+            expect(historial[1].monto).toBe(100);
+            expect(historial[2].tipo).toBe('DEPOSITO');
+            expect(historial[2].monto).toBe(500);
+        });
+    });
+
+    describe('getSaldoTotal', () => {
+        test('debe retornar 0 si no hay cuentas', () => {
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+
+            expect(cliente.getSaldoTotal()).toBe(0);
         });
 
-        test('debe consolidar transacciones de múltiples cuentas en un solo array', () => {
-            const client = new Client('test@example.com', 'pass123');
-            const account1 = new Account('ACC001', 1000);
-            const account2 = new Account('ACC002', 2000);
+        test('debe retornar el saldo total de todas las cuentas', () => {
+            const cliente = new Cliente('CLI001', 'test@example.com', 'pass123');
+            const cuenta1 = new Cuenta('ACC001', 'CLI001', 'AHORRO', 1000);
+            const cuenta2 = new Cuenta('ACC002', 'CLI001', 'CORRIENTE', 2000);
 
-            account1.deposit(100);
-            account2.deposit(200);
+            cliente.agregarCuenta(cuenta1);
+            cliente.agregarCuenta(cuenta2);
 
-            client.createAccount(account1);
-            client.createAccount(account2);
-
-            const history = client.getTransactionHistory();
-
-            expect(Array.isArray(history)).toBe(true);
-            expect(history).toHaveLength(2);
+            expect(cliente.getSaldoTotal()).toBe(3000);
         });
     });
 
     describe('Integración completa', () => {
         test('debe manejar flujo completo de cliente con múltiples cuentas y transacciones', () => {
-            const client = new Client('john.doe@bank.com', 'securePass123');
+            const cliente = new Cliente('CLI001', 'john.doe@bank.com', 'securePass123', 'John', 'Doe');
             
-            // Crear cuentas
-            const savingsAccount = new Account('SAV001', 5000);
-            const checkingAccount = new Account('CHK001', 1000);
+            const cuentaAhorro = new Cuenta('SAV001', 'CLI001', 'AHORRO', 5000);
+            const cuentaCorriente = new Cuenta('CHK001', 'CLI001', 'CORRIENTE', 1000);
             
-            client.createAccount(savingsAccount);
-            client.createAccount(checkingAccount);
+            cliente.agregarCuenta(cuentaAhorro);
+            cliente.agregarCuenta(cuentaCorriente);
 
-            // Realizar transacciones
-            savingsAccount.deposit(1500);
-            checkingAccount.withdraw(300);
-            savingsAccount.withdraw(500);
-            checkingAccount.deposit(200);
+            cuentaAhorro.depositar(1500);
+            cuentaCorriente.retirar(300);
+            cuentaAhorro.retirar(500);
+            cuentaCorriente.depositar(200);
 
-            // Verificar estado
-            expect(client.accounts).toHaveLength(2);
-            expect(savingsAccount.getBalance()).toBe(6000);
-            expect(checkingAccount.getBalance()).toBe(900);
+            expect(cliente.getCuentas()).toHaveLength(2);
+            expect(cuentaAhorro.getSaldo()).toBe(6000);
+            expect(cuentaCorriente.getSaldo()).toBe(900);
 
-            // Verificar historial completo
-            const history = client.getTransactionHistory();
-            expect(history).toHaveLength(4);
+            const historial = cliente.getHistorialCompleto();
+            expect(historial).toHaveLength(4);
+            expect(cliente.getSaldoTotal()).toBe(6900);
         });
     });
 });

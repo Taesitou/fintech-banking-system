@@ -1,4 +1,13 @@
 # Fintech Banking System
+## Consigna
+
+Diseñar e implementar un sistema de gestión
+para una fintech que ofrece servicios bancarios
+a sus clientes.
+El sistema debe permitir la creación de cuentas
+para los clientes nuevos, realizar movimientos
+como depósitos y retiros, y mantener un registro
+de los movimientos realizados en cada cuenta.
 
 ## Overview
 The Fintech Banking System is a web application designed to provide banking services to clients. It allows users to create accounts, perform transactions such as deposits and withdrawals, and maintain a record of all transactions. The system is built using HTML, CSS, and JavaScript, following a modular architecture for better maintainability and scalability.
