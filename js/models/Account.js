@@ -40,6 +40,10 @@ class Account {
     getTransactions() {
         return this.transactions;
     }
+
+    getTransactionHistory() {
+        return this.transactions;
+    }
 }
 
 export default Account;
